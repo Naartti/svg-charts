@@ -7,21 +7,23 @@ const svgCharts = {
 
 svgCharts.bar = function ({ data, options, guideLines = [] }) {
   let content = ''
-  const maxValue = Math.max(...data.y, ...guideLines)
-  const minValue = Math.min(...data.y, ...guideLines)
-  const fill = data.color
-  const width = options.width / data.y.length - options.margin
+  const y = data[0].y
+  const labels = data[0].labels
+  const maxValue = Math.max(...y, ...guideLines)
+  const minValue = Math.min(...y, ...guideLines)
+  const fill = data[0].color
+  const width = options.width / y.length - options.margin
 
   const axisHeight = this.settings.axisHeight
   const canvasHeight = options.height - axisHeight
 
-  data.y.forEach((value, index) => {
+  y.forEach((value, index) => {
     const x = (width + options.margin) * index + options.margin / 2
     const height = value * canvasHeight / maxValue
     const y = canvasHeight - height
 
     content += svg.rect({ height, width, x, y, fill }) +
-      svg.text(data.labels[index], { x, y: y + height, fill: '#cacaca' })
+      svg.text(labels[index], { x, y: y + height, fill: '#cacaca' })
   })
 
   content += this.guideLines(guideLines, {
@@ -37,6 +39,43 @@ svgCharts.bar = function ({ data, options, guideLines = [] }) {
 }
 
 svgCharts.line = function ({ data, options, guideLines = [] }) {
+  let content = ''
+
+  let maxYValue = Math.max(...guideLines) || 0
+  let minYValue = Math.min(...guideLines) || 0
+
+  data.forEach(d => {
+    let localMax = Math.max(...d.y)
+    let localMin = Math.min(...d.y)
+
+    if (localMax > maxYValue) {
+      maxYValue = localMax
+    }
+    if (localMin < minYValue) {
+      minYValue = localMin
+    }
+  })
+
+  const axisHeight = this.settings.axisHeight
+  const canvasHeight = options.height - axisHeight
+
+  content += this.guideLines(guideLines, {
+    height: canvasHeight,
+    width: options.width,
+    maxValue: maxYValue,
+    minValue: minYValue
+  })
+
+  data.forEach(d => {
+    content += svgCharts.polyline({ data: d, options, guideLines })
+  })
+
+  content += this.xAxis({ data, options }, { axisHeight })
+
+  return svg.plot(content, options)
+}
+
+svgCharts.polyline = function ({ data, options, guideLines = [] }) {
   let content = ''
 
   const y = data.y
@@ -58,15 +97,8 @@ svgCharts.line = function ({ data, options, guideLines = [] }) {
   })
 
   content += svg.polyline({ points, stroke: data.color })
-  content += this.guideLines(guideLines, {
-    height: canvasHeight,
-    width: options.width,
-    maxValue: maxYValue,
-    minValue: minYValue
-  })
-  content += this.xAxis({ data, options }, { axisHeight })
 
-  return svg.plot(content, options)
+  return content
 }
 
 svgCharts.xAxis = function ({ data, options }, { axisHeight }) {

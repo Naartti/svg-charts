@@ -9,11 +9,15 @@ dev.init = () => {
     height: 300,
     margin: 1
   }
-  const data = {
+  const data = [{
     y: [1, 2, 3, 2, 0, 5, 4, 3, 4, 2, 0, 1],
     labels: ['Start', '', '', '', '', '', '', '', '', '', '', 'End'],
     color: '#74D7BF'
-  }
+  }, {
+    y: [2, 5, 1, 0, 2, 2, 3, 2, 1, 0, 2, 3],
+    labels: ['Start', '', '', '', '', '', '', '', '', '', '', 'End'],
+    color: '#CA3837'
+  }]
   const guideLines = [1, 2, 3, 4, 5, 6]
 
   // Bar

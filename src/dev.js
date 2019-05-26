@@ -41,6 +41,28 @@ dev.init = () => {
   lineContainer.innerHTML = svgCharts.line({
     data, options, guideLines
   })
+
+  const liveLineContainer = dev.createWrapper({
+    height: options.height,
+    width: options.width
+  })
+
+  const mouseData = [{
+    y: [],
+    color: '#74D7BF'
+  }, {
+    y: [],
+    color: '#F5A623'
+  }]
+
+  window.addEventListener('mousemove', ev => {
+    mouseData[0].y.push(ev.clientX)
+    mouseData[1].y.push(ev.clientY)
+
+    liveLineContainer.innerHTML = svgCharts.line({
+      data: mouseData, options
+    })
+  })
 }
 
 dev.createWrapper = ({ height, width }) => {

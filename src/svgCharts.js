@@ -7,22 +7,30 @@ const svgCharts = {
 
 svgCharts.bar = function ({ data, options, guideLines = [] }) {
   let content = ''
-  const y = data[0].y
-  const labels = data[0].labels
+  const y = data.y
+  const labels = data.labels
   const maxValue = Math.max(...y, ...guideLines)
   const minValue = Math.min(...y, ...guideLines)
-  const fill = data[0].color
+  let fill = []
   const width = options.width / y.length - options.margin
 
   const axisHeight = this.settings.axisHeight
   const canvasHeight = options.height - axisHeight
 
   y.forEach((value, index) => {
+    if (typeof data.color === 'string') {
+      fill.push(data.color)
+    } else if (data.color[index]) {
+      fill.push(data.color[index])
+    } else {
+      fill.push(fill[0])
+    }
+
     const x = (width + options.margin) * index + options.margin / 2
     const height = value * canvasHeight / maxValue
     const y = canvasHeight - height
 
-    content += svg.rect({ height, width, x, y, fill }) +
+    content += svg.rect({ height, width, x, y, fill: fill[index] }) +
       svg.text(labels[index], { x, y: y + height, fill: '#cacaca' })
   })
 
@@ -77,6 +85,10 @@ svgCharts.line = function ({ data, options, guideLines = [] }) {
 
 svgCharts.polyline = function ({ data, options, guideLines = [] }) {
   let content = ''
+
+  if (!data || data.y.length < 2) {
+    return ''
+  }
 
   const y = data.y
   const x = data.x || data.y.map((_value, index) => index + 1)

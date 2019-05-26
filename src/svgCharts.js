@@ -1,5 +1,9 @@
 import svg from '@/svg.js'
 const svgCharts = {
+  defaultOptions: {
+    height: 100,
+    width: 100
+  },
   settings: {
     axisHeight: 30
   }
@@ -46,11 +50,22 @@ svgCharts.bar = function ({ data, options, guideLines = [] }) {
   return svg.plot(content, options)
 }
 
-svgCharts.line = function ({ data, options, guideLines = [] }) {
+svgCharts.line = function ({
+  data = [],
+  options = {
+    height: svgCharts.defaultOptions.height,
+    width: svgCharts.defaultOptions.width
+  },
+  guideLines = []
+}) {
   let content = ''
 
   let maxYValue = Math.max(...guideLines) || 0
   let minYValue = Math.min(...guideLines) || 0
+
+  if (!data) {
+    return ''
+  }
 
   data.forEach(d => {
     let localMax = Math.max(...d.y)
@@ -104,7 +119,8 @@ svgCharts.polyline = function ({ data, options, guideLines = [] }) {
 
   const points = y.map((yValue, index) => {
     const xPos = (x[index] - minXValue) * canvasWidth / (maxXValue - minXValue)
-    const yPos = canvasHeight - yValue * canvasHeight / maxYValue
+    const yPos = canvasHeight - (yValue - minYValue) * canvasHeight / (maxYValue - minYValue)
+
     return [xPos, yPos]
   })
 

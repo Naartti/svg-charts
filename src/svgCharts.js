@@ -1,5 +1,9 @@
 import svg from '@/svg.js'
-const svgCharts = {}
+const svgCharts = {
+  settings: {
+    axisHeight: 30
+  }
+}
 
 svgCharts.bar = function ({ data, options, guideLines = [] }) {
   let content = ''
@@ -8,7 +12,7 @@ svgCharts.bar = function ({ data, options, guideLines = [] }) {
   const fill = data.color
   const width = options.width / data.y.length - options.margin
 
-  const axisHeight = 30
+  const axisHeight = this.settings.axisHeight
   const canvasHeight = options.height - axisHeight
 
   data.y.forEach((value, index) => {
@@ -16,17 +20,51 @@ svgCharts.bar = function ({ data, options, guideLines = [] }) {
     const height = value * canvasHeight / maxValue
     const y = canvasHeight - height
 
-    content += svg.rect({ height, width, x, y, fill })
+    content += svg.rect({ height, width, x, y, fill }) +
+      svg.text(data.labels[index], { x, y: y + height, fill: '#cacaca' })
   })
 
-  content += svgCharts.guideLines(guideLines, {
+  content += this.guideLines(guideLines, {
     height: canvasHeight,
     width: options.width,
     maxValue,
     minValue
   })
 
-  content += svgCharts.xAxis({ data, options }, { axisHeight })
+  content += this.xAxis({ data, options }, { axisHeight })
+
+  return svg.plot(content, options)
+}
+
+svgCharts.line = function ({ data, options, guideLines = [] }) {
+  let content = ''
+
+  const y = data.y
+  const x = data.x || data.y.map((_value, index) => index + 1)
+
+  const maxYValue = Math.max(...y, ...guideLines)
+  const minYValue = Math.min(...y, ...guideLines)
+  const maxXValue = Math.max(...x)
+  const minXValue = Math.min(...x)
+
+  const axisHeight = this.settings.axisHeight
+  const canvasHeight = options.height - axisHeight
+  const canvasWidth = options.width
+
+  const points = y.map((yValue, index) => {
+    const xPos = (x[index] - minXValue) * canvasWidth / (maxXValue - minXValue)
+    const yPos = canvasHeight - yValue * canvasHeight / maxYValue
+    return [xPos, yPos]
+  })
+
+  content += svg.polyline({ points, stroke: data.color })
+  content += this.guideLines(guideLines, {
+    height: canvasHeight,
+    width: options.width,
+    maxValue: maxYValue,
+    minValue: minYValue
+  })
+  content += this.xAxis({ data, options }, { axisHeight })
 
   return svg.plot(content, options)
 }
@@ -49,7 +87,7 @@ svgCharts.guideLines = function (guideLines, { height, width, maxValue, minValue
     const y = height - value * height / maxValue
 
     content += svg.dashLine({ x, y, width }) +
-      svg.text(value, {x, y})
+      svg.text(value, { x, y, fill: '#cacaca' })
   })
 
   return content

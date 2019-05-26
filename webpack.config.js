@@ -1,6 +1,6 @@
 const path = require('path');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const libraryName = 'npm-js-package-boilerplate'
+const libraryName = 'svg-charts'
 const outputFile = `${libraryName}.js`
 
 module.exports = {

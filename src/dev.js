@@ -27,7 +27,7 @@ dev.init = () => {
   })
 
   barContainer.innerHTML = svgCharts.bar({
-    data,
+    data: data[0],
     options,
     guideLines
   })
